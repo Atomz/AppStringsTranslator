@@ -1,7 +1,8 @@
 #!/usr/bin/python  
 #-*- coding:utf-8 -*-  
 
-# 百度翻译 API 文档：http://api.fanyi.baidu.com/api/trans/product/apidoc
+# https://console.developers.google.com/apis/
+# Google API Doc: https://cloud.google.com/translate/docs/translating-text
 
 import httplib
 import md5
@@ -12,9 +13,7 @@ import json
 import os
 import sys
 
-
-kBaiduAppID = 'Please generate from you Baidu developer center' # 百度开发管理后台申请的 AppID
-kBaiduSecretKey = 'Please generate from you Baidu developer center'  # 百度开发管理后台申请的 SecretKey
+kGGAPIKey = 'YOUR_GOOGLE_API_KEY'
 
 
 gStringsFileName = ''
@@ -41,7 +40,7 @@ def initStringsKeyValueFromFile(fileName):
 		print e  
 	else:
 		for line in lines:  
-			match = re.search(r'"(?P<key>.*?)" = "(?P<value>.*?)"', line)
+			match = re.search(r'^"(?P<key>.*?)"(\s*)=(\s*)"(?P<value>.*?)"', line)
 			if match:
 				gStringsKeyList.append(match.group('key'))
 				gStringsValueList.append(match.group('value'))
@@ -66,10 +65,9 @@ def translateToLanguageList(fromLang, toLangs):
 
 
 def translateToLang(fromLang, toLang):
-	httpClient = None
-	myurl = '/api/trans/vip/translate'
+	httpsClient = None
 	
-	httpClient = httplib.HTTPConnection('api.fanyi.baidu.com')
+	httpsClient = httplib.HTTPSConnection('translation.googleapis.com')
 
 	extension = os.path.splitext(gStringsFileName)[1]
 	toFileName = gStringsFileName.replace(extension, '_' + toLang + extension)
@@ -80,23 +78,20 @@ def translateToLang(fromLang, toLang):
 	for index,val in enumerate(gStringsValueList):
 		q = val
 
+		myurl = '/language/translate/v2'
 		if q:
-			salt = random.randint(32768, 65536)
 
-			sign = kBaiduAppID + q + str(salt) + kBaiduSecretKey
-			m1 = md5.new()
-			m1.update(sign)
-			sign = m1.hexdigest()
-			myurl = myurl + '?appid=' + kBaiduAppID + '&q=' + urllib.quote(q) + '&from=' + fromLang + '&to=' + toLang + '&salt=' + str(salt) + '&sign=' + sign
-			 
+			myurl = myurl + '?key=' + kGGAPIKey + '&q=' + urllib.quote(q) + '&source=' + fromLang + '&target=' + toLang
+			#print myurl
 			try:
-				httpClient.request('GET', myurl)
+				httpsClient.request('GET', myurl)
 			 
-				#response是HTTPResponse对象
-				response = httpClient.getresponse()
+				#response is HTTPResponse object
+				response = httpsClient.getresponse()
 
 				jsonData = json.loads(response.read())
-				dst = jsonData['trans_result'][0]['dst']
+				dst = jsonData['data']['translations'][0]['translatedText']
+				print dst
 
 				result = '"' + gStringsKeyList[index] + '" = "' + dst + '";\n'
 				toFile.write(result)
@@ -105,11 +100,11 @@ def translateToLang(fromLang, toLang):
 				print e
 
 		else:
-			# 不需要翻译，直接保存原来的 Key
+			# skip & save original key
 			toFile.write(gStringsKeyList[index])
 
-	if httpClient:
-		httpClient.close()
+	if httpsClient:
+		httpsClient.close()
 
 	if toFile:
 		toFile.close()
@@ -126,4 +121,3 @@ toLangs = raw_input('Enter to language list, split by space: ')
 print 'Start'
 translateToLanguageList(fromLang, toLangs.split())
 print 'All done!'
-
