@@ -1,9 +1,9 @@
 # AppStringsTranslator
-Automatically translate iOS App language into multi-language, depends on Baidu translate. 依赖百度翻译，自动把 iOS App 语言文件翻译成多国语言。
+Automatically translate iOS App language into multi-language, depends on Google translate.
 
 ## Usage
 
-1. Modify `AppStringsTranslator.py`, fill your own Baidu `AppKey/SecretKey`, See [this](http://api.fanyi.baidu.com/api/trans/product/desktop?req=developer).
+1. Modify `AppStringsTranslator.py`, fill your own Google API KEY `kGGAPIKey`, See [this](https://cloud.google.com/translate/docs/).
 2. Run script from terminal. eg: `python AppStringsTranslator.py`.
 3. Input strings file name. eg: `Localizable.strings`
 4. Input from language. eg: `zh`
@@ -70,13 +70,6 @@ hu                  匈牙利语
 cht                 繁体中文
 vie                 越南语
 ```
-
-## Q & A
-
-Q: Why do not use Google translate?   
-A: In China, Google's services are not stable.  
- 
-
 ## Reference
 
-1. [Baidu Translate API](http://api.fanyi.baidu.com/api/trans/product/apidoc)
+1. [Google Translate API](kGGAPIKey)
